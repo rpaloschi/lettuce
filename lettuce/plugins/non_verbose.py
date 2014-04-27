@@ -68,7 +68,7 @@ def print_end(total):
 def print_no_features_found(where):
     where = core.fs.relpath(where)
     if not where.startswith(os.sep):
-        where = '.%s%s' % (os.sep, where)
+        where = '.%s%s' % ('/', where)
 
     logging.info('\033[1;31mOops!\033[0m\n')
     logging.info(

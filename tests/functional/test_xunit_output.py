@@ -19,25 +19,25 @@
 import sys
 import os
 import lettuce
-from StringIO import StringIO
+from io import StringIO
 
 from nose.tools import assert_equals, assert_true, with_setup
 from sure import expect
 from lettuce import registry
 from lettuce import Runner
 from lettuce import xunit_output
+from lettuce.fs import FileSystem
 from lxml import etree
 from tests.functional.test_runner import feature_name, bg_feature_name
 from tests.asserts import prepare_stdout
 
+current_directory = FileSystem.dirname(__file__)
 
 def assert_xsd_valid(filename, content):
-
     xmlschema = etree.XMLSchema(etree.parse(
-        open('tests/functional/xunit.xsd')
+        open(FileSystem.join(current_directory, 'xunit.xsd'))
     ))
     xmlschema.assertValid(etree.parse(StringIO(content)))
-
 
 @with_setup(prepare_stdout, registry.clear)
 def test_xunit_output_with_no_errors():
@@ -51,7 +51,7 @@ def test_xunit_output_with_no_errors():
         assert_equals(root.get("tests"), "1")
         assert_equals(len(root.getchildren()), 1)
         assert_equals(root.find("testcase").get("name"), "Given I do nothing")
-        assert_true(float(root.find("testcase").get("time")) > 0)
+        assert_true(float(root.find("testcase").get("time")) >= 0.0)
 
     old = xunit_output.wrt_output
     xunit_output.wrt_output = assert_correct_xml
@@ -76,9 +76,9 @@ def test_xunit_output_with_one_error():
 
         passed, failed = root.findall("testcase")
         assert_equals(passed.get("name"), "Given my step that passes")
-        assert_true(float(passed.get("time")) > 0)
+        assert_true(float(passed.get("time")) >= 0.0)
         assert_equals(failed.get("name"), "Given my step that blows a exception")
-        assert_true(float(failed.get("time")) > 0)
+        assert_true(float(failed.get("time")) >= 0.0)
         assert_true(failed.find("failure") is not None)
 
     old = xunit_output.wrt_output
@@ -143,8 +143,6 @@ def test_xunit_output_with_no_steps():
     'Test xunit output with no steps'
     called = []
     def assert_correct_xml(filename, content):
-        print filename
-        print content
         called.append(True)
         assert_xsd_valid(filename, content)
         root = etree.fromstring(content)
@@ -178,14 +176,14 @@ def test_xunit_output_with_background_section():
 
         passed1, passed2 = root.findall("testcase")
         assert_equals(passed1.get("name"), 'Given the variable "X" holds 2')
-        assert_true(float(passed1.get("time")) > 0)
+        assert_true(float(passed1.get("time")) >= 0.0)
         assert_equals(passed2.get("name"), 'Given the variable "X" is equal to 2')
-        assert_true(float(passed2.get("time")) > 0)
+        assert_true(float(passed2.get("time")) >= 0.0)
     
     from lettuce import step
     
-    @step(ur'the variable "(\w+)" holds (\d+)')
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
+    @step(r'the variable "(\w+)" holds (\d+)')
+    @step(r'the variable "(\w+)" is equal to (\d+)')
     def just_pass(step, *args):
         pass
     

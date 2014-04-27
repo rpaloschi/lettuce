@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-from cStringIO import StringIO
+from io import StringIO, BytesIO
 
 from nose.tools import with_setup, assert_equal
 from subunit.v2 import ByteStreamToStreamResult
@@ -33,7 +33,7 @@ class Includes(object):
         self.d = d
 
     def __eq__(self, a):
-        return all((v == a[k] for k, v in self.d.iteritems()))
+        return all((v == a[k] for k, v in self.d.items()))
 
     def __repr__(self):
         return '{klass}({d})'.format(
@@ -80,7 +80,6 @@ class State(object):
         """
         Close and check the file
         """
-
         file_.seek(0)
         case = ByteStreamToStreamResult(file_)
         result = StreamToDict(self.handle_dict)
@@ -97,7 +96,7 @@ class State(object):
 
         prepare_stdout()
 
-        output = StringIO()
+        output = BytesIO()
         self.patch = (subunit_output.open_file, subunit_output.close_file)
 
         subunit_output.open_file = lambda f: output

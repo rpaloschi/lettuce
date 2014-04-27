@@ -46,9 +46,10 @@ class ReasonToFail(object):
         else:
             msg = exc.args[0] if exc.args else ''
 
-        if isinstance(msg, basestring):
-            self.cause = utf8_string(msg)
-        self.traceback = utf8_string(traceback.format_exc(exc))
+        self.cause = msg
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        self.traceback = ''.join(lines).replace('\\', '/')
 
 
 class LettuceSyntaxError(SyntaxError):

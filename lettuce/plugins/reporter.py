@@ -7,9 +7,7 @@ class Reporter(object):
         self.scenarios_and_its_fails = {}
 
     def wrt(self, what):
-        if isinstance(what, unicode):
-            what = what.encode('utf-8')
-        sys.stdout.write(what)
+        sys.stdout.write(str(what))
 
     def store_failed_step(self, step):
         if step.failed and step.scenario not in self.failed_scenarios:

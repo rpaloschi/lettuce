@@ -87,16 +87,16 @@ def test_non_recursive_locate():
 
 def test_open_non_abspath():
     fs = FileSystem()
-    assert fs.open('tests/functional/data/some.txt', 'r').read() == 'some text here!\n'
+    assert fs.open('tests/functional/data/some.txt', 'r').read().replace('\r', '') == 'some text here!\n'
 
 def test_open_abspath():
     fs = FileSystem()
-    assert fs.open(abspath('./tests/functional/data/some.txt'), 'r').read() == 'some text here!\n'
+    assert fs.open(abspath('./tests/functional/data/some.txt'), 'r').read().replace('\r', '') == 'some text here!\n'
 
 def test_open_raw_non_abspath():
     fs = FileSystem()
-    assert fs.open_raw('tests/functional/data/some.txt', 'r').read() == 'some text here!\n'
+    assert fs.open_raw('tests/functional/data/some.txt', 'r').read().replace('\r', '') == 'some text here!\n'
 
 def test_open_raw_abspath():
     fs = FileSystem()
-    assert fs.open_raw(abspath('./tests/functional/data/some.txt'), 'r').read() == 'some text here!\n'
+    assert fs.open_raw(abspath('./tests/functional/data/some.txt'), 'r').read().replace('\r', '') == 'some text here!\n'

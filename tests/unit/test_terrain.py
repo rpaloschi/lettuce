@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
-from mox import Mox
 from nose.tools import assert_equals
 
 from lettuce import step
@@ -24,6 +23,8 @@ from lettuce.terrain import before
 from lettuce.terrain import world
 from lettuce.core import Feature, TotalResult
 from lettuce.registry import CALLBACK_REGISTRY
+import collections
+import mock
 
 FEATURE1 = '''
 Feature: Before and After callbacks all along lettuce
@@ -173,25 +174,22 @@ def test_after_each_all_is_executed_before_each_all():
     from lettuce.fs import FeatureLoader
     world.all_steps = []
 
-    mox = Mox()
+    loader_mock = mock.Mock(spec=FeatureLoader)
+    old_sys_path = lettuce.sys.path
+    old_fs = lettuce.fs
+    old_FileSystem = lettuce.fs.FileSystem
+    old_Feature = lettuce.Feature
 
-    loader_mock = mox.CreateMock(FeatureLoader)
-    mox.StubOutWithMock(lettuce.sys, 'path')
-    mox.StubOutWithMock(lettuce, 'fs')
-    mox.StubOutWithMock(lettuce.fs, 'FileSystem')
-    mox.StubOutWithMock(lettuce, 'Feature')
+    lettuce.sys.path = mock.Mock(spec=old_sys_path)
+    lettuce.sys.path.insert = mock.Mock()
+    lettuce.sys.path.remove = mock.Mock()
+    lettuce.fs = mock.Mock(spec=old_fs)
+    lettuce.fs.FileSystem = mock.Mock(spec=old_FileSystem)
+    lettuce.Feature = mock.Mock(spec=old_Feature)
 
-    lettuce.fs.FeatureLoader('some_basepath').AndReturn(loader_mock)
-
-    lettuce.sys.path.insert(0, 'some_basepath')
-    lettuce.sys.path.remove('some_basepath')
-
-    loader_mock.find_feature_files().AndReturn(['some_basepath/foo.feature'])
-    loader_mock.find_and_load_step_definitions()
-    lettuce.Feature.from_file('some_basepath/foo.feature'). \
-        AndReturn(Feature.from_string(FEATURE2))
-
-    mox.ReplayAll()
+    loader_mock.find_feature_files = mock.Mock(return_value=['some_basepath/foo.feature'])
+    lettuce.fs.FeatureLoader = mock.Mock(return_value=loader_mock)    
+    lettuce.Feature.from_file = mock.Mock(return_value=Feature.from_string(FEATURE2))
 
     runner = lettuce.Runner('some_basepath')
     CALLBACK_REGISTRY.clear()
@@ -211,18 +209,24 @@ def test_after_each_all_is_executed_before_each_all():
 
     runner.run()
 
-    mox.VerifyAll()
+    lettuce.sys.path.insert.assert_called_with(0, 'some_basepath')
+    lettuce.sys.path.remove.assert_called_with('some_basepath')
+    loader_mock.find_and_load_step_definitions.assert_called_once
+    lettuce.Feature.from_file.assert_called_once_with('some_basepath/foo.feature')
 
     assert_equals(
         world.all_steps,
         ['before', 'during', 'during', 'after'],
     )
 
-    mox.UnsetStubs()
+    lettuce.sys.path = old_sys_path
+    lettuce.fs = old_fs
+    lettuce.fs.FileSystem = old_FileSystem
+    lettuce.Feature = old_Feature
 
 
 def test_world_should_be_able_to_absorb_functions():
-    u"world should be able to absorb functions"
+    "world should be able to absorb functions"
     assert not hasattr(world, 'function1')
 
     @world.absorb
@@ -230,7 +234,7 @@ def test_world_should_be_able_to_absorb_functions():
         return 'absorbed'
 
     assert hasattr(world, 'function1')
-    assert callable(world.function1)
+    assert isinstance(world.function1, collections.Callable)
 
     assert_equals(world.function1(), 'absorbed')
 
@@ -240,13 +244,13 @@ def test_world_should_be_able_to_absorb_functions():
 
 
 def test_world_should_be_able_to_absorb_lambdas():
-    u"world should be able to absorb lambdas"
+    "world should be able to absorb lambdas"
     assert not hasattr(world, 'named_func')
 
     world.absorb(lambda: 'absorbed', 'named_func')
 
     assert hasattr(world, 'named_func')
-    assert callable(world.named_func)
+    assert isinstance(world.named_func, collections.Callable)
 
     assert_equals(world.named_func(), 'absorbed')
 
@@ -256,7 +260,7 @@ def test_world_should_be_able_to_absorb_lambdas():
 
 
 def test_world_should_be_able_to_absorb_classs():
-   u"world should be able to absorb class"
+   "world should be able to absorb class"
    assert not hasattr(world, 'MyClass')
 
    if sys.version_info < (2, 6):
@@ -344,44 +348,44 @@ def test_hooks_should_be_still_manually_callable():
     def after_outline():
         pass
 
-    assert callable(before_all), \
+    assert isinstance(before_all, collections.Callable), \
         '@before.all decorator should return the original function'
 
-    assert callable(before_handle_request), \
+    assert isinstance(before_handle_request, collections.Callable), \
         '@before.handle_request decorator should return the original function'
 
-    assert callable(before_harvest), \
+    assert isinstance(before_harvest, collections.Callable), \
         '@before.harvest decorator should return the original function'
 
-    assert callable(before_each_feature), \
+    assert isinstance(before_each_feature, collections.Callable), \
         '@before.each_feature decorator should return the original function'
 
-    assert callable(before_outline), \
+    assert isinstance(before_outline, collections.Callable), \
         '@before.outline decorator should return the original function'
 
-    assert callable(before_each_scenario), \
+    assert isinstance(before_each_scenario, collections.Callable), \
         '@before.each_scenario decorator should return the original function'
 
-    assert callable(before_each_step), \
+    assert isinstance(before_each_step, collections.Callable), \
         '@before.each_step decorator should return the original function'
 
-    assert callable(after_all), \
+    assert isinstance(after_all, collections.Callable), \
         '@after.all decorator should return the original function'
 
-    assert callable(after_handle_request), \
+    assert isinstance(after_handle_request, collections.Callable), \
         '@after.handle_request decorator should return the original function'
 
-    assert callable(after_harvest), \
+    assert isinstance(after_harvest, collections.Callable), \
         '@after.harvest decorator should return the original function'
 
-    assert callable(after_each_feature), \
+    assert isinstance(after_each_feature, collections.Callable), \
         '@after.each_feature decorator should return the original function'
 
-    assert callable(after_outline), \
+    assert isinstance(after_outline, collections.Callable), \
         '@after.outline decorator should return the original function'
 
-    assert callable(after_each_scenario), \
+    assert isinstance(after_each_scenario, collections.Callable), \
         '@after.each_scenario decorator should return the original function'
 
-    assert callable(after_each_step), \
+    assert isinstance(after_each_step, collections.Callable), \
         '@after.each_step decorator should return the original function'

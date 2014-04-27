@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import os
-import imp
 import sys
+import imp
 import codecs
 import fnmatch
 import zipfile
@@ -48,9 +48,9 @@ class FeatureLoader(object):
             to_load = FileSystem.filename(filename, with_extension=False)
             try:
                 module = __import__(to_load)
-            except ValueError, e:
+            except ValueError as e:
                 import traceback
-                err_msg = traceback.format_exc(e)
+                err_msg = traceback.format_exc(2)
                 if 'empty module name' in err_msg.lower():
                     continue
                 else:
@@ -58,7 +58,7 @@ class FeatureLoader(object):
                               .format(e, filename)),
                     raise e
 
-            reload(module)  # always take fresh meat :)
+            imp.reload(module)  # always take fresh meat :)
             sys.path.remove(root)
 
     def find_feature_files(self):
@@ -144,7 +144,7 @@ class FileSystem(object):
         """
         try:
             os.makedirs(path)
-        except OSError, e:
+        except OSError as e:
             # ignore if path already exists
             if e.errno not in (17, ):
                 raise e
@@ -173,7 +173,7 @@ class FileSystem(object):
         '''Returns the absolute path for the given path.'''
         current_path = cls.current_dir()
         absolute_path = cls.abspath(path)
-        return re.sub("^" + re.escape(current_path), '', absolute_path).lstrip("/")
+        return re.sub("^" + re.escape(current_path), '', absolute_path).lstrip("/").lstrip("\\").replace("\\", "/")
 
     @classmethod
     def join(cls, *args):

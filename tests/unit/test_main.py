@@ -16,8 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import lettuce
 import lettuce.fs
+import mock
 from nose.tools import assert_equals
-from mox import Mox
+import imp
 
 
 def test_has_version():
@@ -44,26 +45,28 @@ def test_terrain_import_exception():
         'module "terrain"\nbut it has errors, check its contents and ' \
         'try to run lettuce again.\n\nOriginal traceback below:\n\n'
 
-    mox = Mox()
+    old_FileSystem = lettuce.fs.FileSystem
+    old_traceback = lettuce.exceptions.traceback
+    old_stderr = lettuce.sys.stderr
 
-    mox.StubOutWithMock(lettuce.fs, 'FileSystem')
-    mox.StubOutWithMock(lettuce.exceptions, 'traceback')
-    mox.StubOutWithMock(lettuce.sys, 'stderr')
+    lettuce.fs.FileSystem = mock.Mock(spec=lettuce.fs.FileSystem)
+    lettuce.exceptions.traceback = mock.Mock(spec=lettuce.exceptions.traceback)
+    lettuce.sys.stderr = mock.Mock(spec=lettuce.sys.stderr)
 
     exc = Exception('foo bar')
-    lettuce.fs.FileSystem._import('terrain').AndRaise(exc)
-    lettuce.exceptions.traceback.format_exc(exc). \
-        AndReturn('I AM THE TRACEBACK FOR IMPORT ERROR')
+    def import_side_effect(filepath):        
+        raise exc
 
-    lettuce.sys.stderr.write(string)
-    lettuce.sys.stderr.write('I AM THE TRACEBACK FOR IMPORT ERROR')
-
-    mox.ReplayAll()
+    lettuce.fs.FileSystem._import = mock.Mock(side_effect=import_side_effect)
+    lettuce.exceptions.traceback.format_exc = mock.Mock(\
+        return_value='I AM THE TRACEBACK FOR IMPORT ERROR')
 
     try:
-        reload(lettuce)
+        imp.reload(lettuce)
     except SystemExit:
-        mox.VerifyAll()
-
+        lettuce.fs.FileSystem._import.assert_called_once_with('terrain')
+        lettuce.sys.stderr.write.assert_called_with('I AM THE TRACEBACK FOR IMPORT ERROR')
     finally:
-        mox.UnsetStubs()
+        lettuce.fs.FileSystem = old_FileSystem
+        lettuce.exceptions.traceback = old_traceback
+        lettuce.sys.stderr = old_stderr

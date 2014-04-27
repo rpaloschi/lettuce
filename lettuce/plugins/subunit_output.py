@@ -17,7 +17,7 @@
 
 import datetime
 import sys
-from StringIO import StringIO
+from io import StringIO
 
 from lettuce.terrain import before, after
 
@@ -43,7 +43,6 @@ def open_file(filename):
 def close_file(file_):
     """
     """
-
     file_.close()
 
 
@@ -124,11 +123,11 @@ def enable(filename=None):
         test_id = get_test_id(step.scenario)
 
         if step.passed:
-            marker = u'✔'
+            marker = '✔'
         elif not step.defined_at:
-            marker = u'?'
+            marker = '?'
         elif step.failed:
-            marker = u'❌'
+            marker = '❌'
 
             try:
                 streamresult.status(test_id=test_id,
@@ -139,11 +138,11 @@ def enable(filename=None):
                 pass
 
         elif not step.ran:
-            marker = u' '
+            marker = ' '
         else:
             raise AssertionError("Internal error")
 
-        steps = u'{marker} {sentence}\n'.format(
+        steps = '{marker} {sentence}\n'.format(
             marker=marker,
             sentence=step.sentence)
         streamresult.status(test_id=test_id,

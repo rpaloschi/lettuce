@@ -21,12 +21,7 @@ release = 'kryptonite'
 
 import os
 import sys
-import traceback
-try:
-    from imp import reload
-except ImportError:
-    # python 2.5 fallback
-    pass
+from importlib import reload
 
 import random
 
@@ -71,14 +66,14 @@ __all__ = [
 try:
     terrain = fs.FileSystem._import("terrain")
     reload(terrain)
-except Exception, e:
+except Exception as e:
     if not "No module named terrain" in str(e):
         string = 'Lettuce has tried to load the conventional environment ' \
             'module "terrain"\nbut it has errors, check its contents and ' \
             'try to run lettuce again.\n\nOriginal traceback below:\n\n'
 
         sys.stderr.write(string)
-        sys.stderr.write(exceptions.traceback.format_exc(e))
+        sys.stderr.write(exceptions.traceback.format_exc(2))
         raise SystemExit(1)
 
 
@@ -108,7 +103,7 @@ class Runner(object):
         sys.path.insert(0, base_path)
         self.loader = fs.FeatureLoader(base_path)
         self.verbosity = verbosity
-        self.scenarios = scenarios and map(int, scenarios.split(",")) or None
+        self.scenarios = scenarios and list(map(int, scenarios.split(","))) or None
         self.failfast = failfast
         if auto_pdb:
             autopdb.enable(self)
@@ -152,7 +147,7 @@ class Runner(object):
             if self.random:
                 random.shuffle(features_files)
 
-        if not features_files:
+        if not features_files:            
             self.output.print_no_features_found(self.loader.base_dir)
             return
 
@@ -161,8 +156,8 @@ class Runner(object):
         # that we don't even want to test.
         try:
             self.loader.find_and_load_step_definitions()
-        except StepLoadingError, e:
-            print "Error loading step definitions:\n", e
+        except StepLoadingError as e:
+            print(("Error loading step definitions:\n %s" % str(e)))
             return
 
         call_hook('before', 'all')
@@ -177,16 +172,16 @@ class Runner(object):
                                 random=self.random,
                                 failfast=self.failfast))
 
-        except exceptions.LettuceSyntaxError, e:
+        except exceptions.LettuceSyntaxError as e:
             sys.stderr.write(e.msg)
             failed = True
         except:
             if not self.failfast:
                 e = sys.exc_info()[1]
-                print "Died with %s" % str(e)
-                traceback.print_exc()
+                print(("Died with %s" % str(e)))
+                print(exceptions.traceback.format_exc(2))
             else:
-                print
+                print()
                 print ("Lettuce aborted running any more tests "
                        "because was called with the `--failfast` option")
 

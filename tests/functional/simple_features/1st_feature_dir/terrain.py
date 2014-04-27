@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from lettuce.terrain import world
+import os
+import sys
+
+sys.path.insert(1, os.path.join(sys.path[0], '../../../../'))
+
+from lettuce import world
 
 world.works_fine = True

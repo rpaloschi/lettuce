@@ -25,8 +25,6 @@ from lettuce.terrain import world
 
 
 def wrt(what):
-    if isinstance(what, unicode):
-        what = what.encode('utf-8')
     sys.stdout.write(what)
 
 
@@ -164,7 +162,7 @@ def print_end(total=None):
 def print_no_features_found(where):
     where = core.fs.relpath(where)
     if not where.startswith(os.sep):
-        where = '.%s%s' % (os.sep, where)
+        where = '.%s%s' % ('/', where)
 
     wrt('Oops!\n')
     wrt('could not find features at %s\n' % where)

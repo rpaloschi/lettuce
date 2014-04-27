@@ -28,8 +28,6 @@ from lettuce.terrain import world
 
 
 def wrt(what):
-    if isinstance(what, unicode):
-        what = what.encode('utf-8')
     sys.stdout.write(what)
 
 
@@ -243,7 +241,11 @@ def print_end(total=None):
         'undefined': '\033[0;33m'
     }
 
-    for kind, color in kinds_and_colors.items():
+    kinds = list(kinds_and_colors.keys())
+    kinds.sort()
+
+    for kind in kinds:
+        color = kinds_and_colors[kind]
         attr = 'steps_%s' % kind
         stotal = getattr(total, attr)
         if stotal:
@@ -290,7 +292,7 @@ def print_end(total=None):
 def print_no_features_found(where):
     where = core.fs.relpath(where)
     if not where.startswith(os.sep):
-        where = '.%s%s' % (os.sep, where)
+        where = '.%s%s' % ('/', where)
 
     write_out('\033[1;31mOops!\033[0m\n')
     write_out(

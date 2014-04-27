@@ -19,13 +19,13 @@ import random
 import lettuce
 from mock import Mock, patch
 from sure import expect
-from StringIO import StringIO
+from io import StringIO
 from os.path import dirname, join, abspath
-from inspect import currentframe
+from inspect import currentframe, getframeinfo
 
 from nose.tools import assert_equals, with_setup, assert_raises
 from lettuce.fs import FeatureLoader
-from lettuce.core import Feature, fs, StepDefinition
+from lettuce.core import Feature, fs, StepDefinition, STEP_REGISTRY
 from lettuce.terrain import world
 from lettuce import Runner
 
@@ -36,9 +36,10 @@ from tests.asserts import assert_stderr_lines
 from tests.asserts import assert_stdout_lines
 from tests.asserts import assert_stderr_lines_with_traceback
 from tests.asserts import assert_stdout_lines_with_traceback
+import imp
 
-current_dir = abspath(dirname(__file__))
-lettuce_dir = abspath(dirname(lettuce.__file__))
+current_dir = abspath(dirname(__file__)).replace('\\', '/')
+lettuce_dir = abspath(dirname(lettuce.__file__)).replace('\\', '/')
 ojoin = lambda *x: join(current_dir, 'output_features', *x)
 sjoin = lambda *x: join(current_dir, 'syntax_features', *x)
 tjoin = lambda *x: join(current_dir, 'tag_features', *x)
@@ -46,7 +47,7 @@ bjoin = lambda *x: join(current_dir, 'bg_features', *x)
 
 lettuce_path = lambda *x: fs.relpath(join(lettuce_dir, *x))
 
-call_line = StepDefinition.__call__.im_func.func_code.co_firstlineno + 5
+call_line = StepDefinition.__call__.__code__.co_firstlineno + 5
 
 
 def joiner(callback, name):
@@ -68,7 +69,7 @@ def test_try_to_import_terrain():
 
     try:
         import lettuce
-        reload(lettuce)
+        imp.reload(lettuce)
         raise AssertionError('The runner should raise ImportError !')
     except SystemExit:
         assert_stderr_lines_with_traceback(
@@ -454,7 +455,7 @@ def test_output_with_failed_colorless_with_table():
         "Feature: Table Fail                           # tests/functional/output_features/failed_table/failed_table.feature:1\n"
         "\n"
         "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
-        u"    Given I have a dumb step that passes ♥    # tests/functional/output_features/failed_table/failed_table_steps.py:20\n"
+        "    Given I have a dumb step that passes ♥    # tests/functional/output_features/failed_table/failed_table_steps.py:20\n"
         "    And this one fails                        # tests/functional/output_features/failed_table/failed_table_steps.py:24\n"
         "    Traceback (most recent call last):\n"
         '      File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
@@ -483,7 +484,7 @@ def test_output_with_failed_colorless_with_table():
         "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
         "\n") % {
             'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
+            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')).replace('\\', '/'),
             'call_line': call_line,
         }
     )
@@ -501,8 +502,8 @@ def test_output_with_failed_colorful_with_table():
         "\033[1;37mFeature: Table Fail                           \033[1;30m# tests/functional/output_features/failed_table/failed_table.feature:1\033[0m\n"
         "\n"
         "\033[1;37m  Scenario: See it fail                       \033[1;30m# tests/functional/output_features/failed_table/failed_table.feature:2\033[0m\n"
-        u"\033[1;30m    Given I have a dumb step that passes ♥    \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:20\033[0m\n"
-        u"\033[A\033[1;32m    Given I have a dumb step that passes ♥    \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:20\033[0m\n"
+        "\033[1;30m    Given I have a dumb step that passes ♥    \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:20\033[0m\n"
+        "\033[A\033[1;32m    Given I have a dumb step that passes ♥    \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:20\033[0m\n"
         "\033[1;30m    And this one fails                        \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:24\033[0m\n"
         "\033[A\033[0;31m    And this one fails                        \033[1;41;33m# tests/functional/output_features/failed_table/failed_table_steps.py:24\033[0m\n"
         "\033[1;31m    Traceback (most recent call last):\n"
@@ -534,8 +535,8 @@ def test_output_with_failed_colorful_with_table():
         "\033[1;31mList of failed scenarios:\n"
         "\033[0;31m  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
         "\033[0m\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
+            'lettuce_core_file': abspath(lettuce_path('core.py')).replace('\\', '/'),
+            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')).replace('\\', '/'),
             'call_line': call_line,
         }
     )
@@ -553,7 +554,7 @@ def test_output_with_successful_outline_colorless():
         'Feature: Successful Scenario Outline                          # tests/functional/output_features/success_outline/success_outline.feature:1\n'
         '  As lettuce author                                           # tests/functional/output_features/success_outline/success_outline.feature:2\n'
         '  In order to finish the first release                        # tests/functional/output_features/success_outline/success_outline.feature:3\n'
-        u'  I want to make scenario outlines work ♥                     # tests/functional/output_features/success_outline/success_outline.feature:4\n'
+        '  I want to make scenario outlines work ♥                     # tests/functional/output_features/success_outline/success_outline.feature:4\n'
         '\n'
         '  Scenario Outline: fill a web form                           # tests/functional/output_features/success_outline/success_outline.feature:6\n'
         '    Given I open browser at "http://www.my-website.com/"      # tests/functional/output_features/success_outline/success_outline_steps.py:21\n'
@@ -589,7 +590,7 @@ def test_output_with_successful_outline_colorful():
         '\033[1;37mFeature: Successful Scenario Outline                          \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:1\033[0m\n'
         '\033[1;37m  As lettuce author                                           \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:2\033[0m\n'
         '\033[1;37m  In order to finish the first release                        \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:3\033[0m\n'
-        u'\033[1;37m  I want to make scenario outlines work ♥                     \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:4\033[0m\n'
+        '\033[1;37m  I want to make scenario outlines work ♥                     \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:4\033[0m\n'
         '\n'
         '\033[1;37m  Scenario Outline: fill a web form                           \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:6\033[0m\n'
         '\033[0;36m    Given I open browser at "http://www.my-website.com/"      \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:21\033[0m\n'
@@ -625,7 +626,7 @@ def test_output_with_failful_outline_colorless():
         'Feature: Failful Scenario Outline                             # tests/functional/output_features/fail_outline/fail_outline.feature:1\n'
         '  As lettuce author                                           # tests/functional/output_features/fail_outline/fail_outline.feature:2\n'
         '  In order to finish the first release                        # tests/functional/output_features/fail_outline/fail_outline.feature:3\n'
-        u'  I want to make scenario outlines work ♥                     # tests/functional/output_features/fail_outline/fail_outline.feature:4\n'
+        '  I want to make scenario outlines work ♥                     # tests/functional/output_features/fail_outline/fail_outline.feature:4\n'
         '\n'
         '  Scenario Outline: fill a web form                           # tests/functional/output_features/fail_outline/fail_outline.feature:6\n'
         '    Given I open browser at "http://www.my-website.com/"      # tests/functional/output_features/fail_outline/fail_outline_steps.py:21\n'
@@ -657,7 +658,7 @@ def test_output_with_failful_outline_colorless():
         '  Scenario Outline: fill a web form                           # tests/functional/output_features/fail_outline/fail_outline.feature:6\n'
         '\n' % {
             'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'fail_outline', 'fail_outline_steps.py')),
+            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'fail_outline', 'fail_outline_steps.py')).replace('\\', '/'),
             'call_line': call_line,
         }
     )
@@ -675,7 +676,7 @@ def test_output_with_failful_outline_colorful():
         '\033[1;37mFeature: Failful Scenario Outline                             \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:1\033[0m\n'
         '\033[1;37m  As lettuce author                                           \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:2\033[0m\n'
         '\033[1;37m  In order to finish the first release                        \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:3\033[0m\n'
-        u'\033[1;37m  I want to make scenario outlines work ♥                     \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:4\033[0m\n'
+        '\033[1;37m  I want to make scenario outlines work ♥                     \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:4\033[0m\n'
         '\n'
         '\033[1;37m  Scenario Outline: fill a web form                           \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:6\033[0m\n'
         '\033[0;36m    Given I open browser at "http://www.my-website.com/"      \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:21\033[0m\n'
@@ -707,7 +708,7 @@ def test_output_with_failful_outline_colorful():
         "\033[0;31m  Scenario Outline: fill a web form                           # tests/functional/output_features/fail_outline/fail_outline.feature:6\n"
         "\033[0m\n" % {
             'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'fail_outline', 'fail_outline_steps.py')),
+            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'fail_outline', 'fail_outline_steps.py')).replace('\\', '/'),
             'call_line': call_line,
         }
     )
@@ -721,24 +722,24 @@ def test_output_snippets_with_groups_within_double_quotes_colorless():
     runner.run()
 
     assert_stdout_lines(
-        u'\n'
-        u'Feature: double-quoted snippet proposal                          # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:1\n'
-        u'\n'
-        u'  Scenario: Propose matched groups                               # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:2\n'
-        u'    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:3 (undefined)\n'
-        u'\n'
-        u'1 feature (0 passed)\n'
-        u'1 scenario (0 passed)\n'
-        u'1 step (1 undefined, 0 passed)\n'
-        u'\n'
-        u'You can implement step definitions for undefined steps with these snippets:\n'
-        u'\n'
-        u"# -*- coding: utf-8 -*-\n"
-        u'from lettuce import step\n'
-        u'\n'
-        u'@step(u\'Given I have "([^\"]*)" and "([^\"]*)"\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\n'
+        '\n'
+        'Feature: double-quoted snippet proposal                          # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:1\n'
+        '\n'
+        '  Scenario: Propose matched groups                               # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:2\n'
+        '    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:3 (undefined)\n'
+        '\n'
+        '1 feature (0 passed)\n'
+        '1 scenario (0 passed)\n'
+        '1 step (1 undefined, 0 passed)\n'
+        '\n'
+        'You can implement step definitions for undefined steps with these snippets:\n'
+        '\n'
+        "# -*- coding: utf-8 -*-\n"
+        'from lettuce import step\n'
+        '\n'
+        '@step(u\'Given I have "([^\"]*)" and "([^\"]*)"\')\n'
+        'def given_i_have_group1_and_group2(step, group1, group2):\n'
+        '    assert False, \'This step must be implemented\'\n'
     )
 
 
@@ -750,24 +751,24 @@ def test_output_snippets_with_groups_within_double_quotes_colorful():
     runner.run()
 
     assert_stdout_lines(
-        u'\n'
-        u'\033[1;37mFeature: double-quoted snippet proposal                          \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:1\033[0m\n'
-        u'\n'
-        u'\033[1;37m  Scenario: Propose matched groups                               \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:2\033[0m\n'
-        u'\033[0;33m    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:3\033[0m\n'
-        u'\n'
+        '\n'
+        '\033[1;37mFeature: double-quoted snippet proposal                          \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:1\033[0m\n'
+        '\n'
+        '\033[1;37m  Scenario: Propose matched groups                               \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:2\033[0m\n'
+        '\033[0;33m    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:3\033[0m\n'
+        '\n'
         "\033[1;37m1 feature (\033[0;31m0 passed\033[1;37m)\033[0m\n"
         "\033[1;37m1 scenario (\033[0;31m0 passed\033[1;37m)\033[0m\n"
         "\033[1;37m1 step (\033[0;33m1 undefined\033[1;37m, \033[1;32m0 passed\033[1;37m)\033[0m\n"
-        u'\n'
-        u'\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n'
-        u'\n'
-        u"# -*- coding: utf-8 -*-\n"
-        u'from lettuce import step\n'
-        u'\n'
-        u'@step(u\'Given I have "([^"]*)" and "([^"]*)"\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\033[0m\n'
+        '\n'
+        '\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n'
+        '\n'
+        "# -*- coding: utf-8 -*-\n"
+        'from lettuce import step\n'
+        '\n'
+        '@step(u\'Given I have "([^"]*)" and "([^"]*)"\')\n'
+        'def given_i_have_group1_and_group2(step, group1, group2):\n'
+        '    assert False, \'This step must be implemented\'\033[0m\n'
     )
 
 
@@ -779,24 +780,24 @@ def test_output_snippets_with_groups_within_single_quotes_colorless():
     runner.run()
 
     assert_stdout_lines(
-        u'\n'
-        u'Feature: single-quoted snippet proposal                          # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:1\n'
-        u'\n'
-        u'  Scenario: Propose matched groups                               # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:2\n'
-        u'    Given I have \'stuff here\' and \'more @#$%ˆ& bizar sutff h3r3\' # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:3 (undefined)\n'
-        u'\n'
-        u'1 feature (0 passed)\n'
-        u'1 scenario (0 passed)\n'
-        u'1 step (1 undefined, 0 passed)\n'
-        u'\n'
-        u'You can implement step definitions for undefined steps with these snippets:\n'
-        u'\n'
-        u"# -*- coding: utf-8 -*-\n"
-        u'from lettuce import step\n'
-        u'\n'
-        u'@step(u\'Given I have \\\'([^\\\']*)\\\' and \\\'([^\\\']*)\\\'\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\n'
+        '\n'
+        'Feature: single-quoted snippet proposal                          # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:1\n'
+        '\n'
+        '  Scenario: Propose matched groups                               # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:2\n'
+        '    Given I have \'stuff here\' and \'more @#$%ˆ& bizar sutff h3r3\' # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:3 (undefined)\n'
+        '\n'
+        '1 feature (0 passed)\n'
+        '1 scenario (0 passed)\n'
+        '1 step (1 undefined, 0 passed)\n'
+        '\n'
+        'You can implement step definitions for undefined steps with these snippets:\n'
+        '\n'
+        "# -*- coding: utf-8 -*-\n"
+        'from lettuce import step\n'
+        '\n'
+        '@step(u\'Given I have \\\'([^\\\']*)\\\' and \\\'([^\\\']*)\\\'\')\n'
+        'def given_i_have_group1_and_group2(step, group1, group2):\n'
+        '    assert False, \'This step must be implemented\'\n'
     )
 
 
@@ -808,24 +809,24 @@ def test_output_snippets_with_groups_within_single_quotes_colorful():
     runner.run()
 
     assert_stdout_lines(
-        u'\n'
-        u'\033[1;37mFeature: single-quoted snippet proposal                          \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:1\033[0m\n'
-        u'\n'
-        u'\033[1;37m  Scenario: Propose matched groups                               \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:2\033[0m\n'
-        u'\033[0;33m    Given I have \'stuff here\' and \'more @#$%ˆ& bizar sutff h3r3\' \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:3\033[0m\n'
-        u'\n'
+        '\n'
+        '\033[1;37mFeature: single-quoted snippet proposal                          \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:1\033[0m\n'
+        '\n'
+        '\033[1;37m  Scenario: Propose matched groups                               \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:2\033[0m\n'
+        '\033[0;33m    Given I have \'stuff here\' and \'more @#$%ˆ& bizar sutff h3r3\' \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:3\033[0m\n'
+        '\n'
         "\033[1;37m1 feature (\033[0;31m0 passed\033[1;37m)\033[0m\n"
         "\033[1;37m1 scenario (\033[0;31m0 passed\033[1;37m)\033[0m\n"
         "\033[1;37m1 step (\033[0;33m1 undefined\033[1;37m, \033[1;32m0 passed\033[1;37m)\033[0m\n"
-        u'\n'
-        u'\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n'
-        u'\n'
-        u"# -*- coding: utf-8 -*-\n"
-        u'from lettuce import step\n'
-        u'\n'
-        u'@step(u\'Given I have \\\'([^\\\']*)\\\' and \\\'([^\\\']*)\\\'\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\033[0m\n'
+        '\n'
+        '\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n'
+        '\n'
+        "# -*- coding: utf-8 -*-\n"
+        'from lettuce import step\n'
+        '\n'
+        '@step(u\'Given I have \\\'([^\\\']*)\\\' and \\\'([^\\\']*)\\\'\')\n'
+        'def given_i_have_group1_and_group2(step, group1, group2):\n'
+        '    assert False, \'This step must be implemented\'\033[0m\n'
     )
 
 
@@ -837,25 +838,25 @@ def test_output_snippets_with_groups_within_redundant_quotes():
     runner.run()
 
     assert_stdout_lines(
-        u'\n'
-        u'Feature: avoid duplicating same snippet                          # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:1\n'
-        u'\n'
-        u'  Scenario: Propose matched groups                               # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:2\n'
-        u'    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:3 (undefined)\n'
-        u'    Given I have "blablabla" and "12345"                         # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:4 (undefined)\n'
-        u'\n'
-        u'1 feature (0 passed)\n'
-        u'1 scenario (0 passed)\n'
-        u'2 steps (2 undefined, 0 passed)\n'
-        u'\n'
-        u'You can implement step definitions for undefined steps with these snippets:\n'
-        u'\n'
-        u"# -*- coding: utf-8 -*-\n"
-        u'from lettuce import step\n'
-        u'\n'
-        u'@step(u\'Given I have "([^"]*)" and "([^"]*)"\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\n'
+        '\n'
+        'Feature: avoid duplicating same snippet                          # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:1\n'
+        '\n'
+        '  Scenario: Propose matched groups                               # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:2\n'
+        '    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:3 (undefined)\n'
+        '    Given I have "blablabla" and "12345"                         # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:4 (undefined)\n'
+        '\n'
+        '1 feature (0 passed)\n'
+        '1 scenario (0 passed)\n'
+        '2 steps (2 undefined, 0 passed)\n'
+        '\n'
+        'You can implement step definitions for undefined steps with these snippets:\n'
+        '\n'
+        "# -*- coding: utf-8 -*-\n"
+        'from lettuce import step\n'
+        '\n'
+        '@step(u\'Given I have "([^"]*)" and "([^"]*)"\')\n'
+        'def given_i_have_group1_and_group2(step, group1, group2):\n'
+        '    assert False, \'This step must be implemented\'\n'
     )
 
 
@@ -867,35 +868,35 @@ def test_output_snippets_with_normalized_unicode_names():
     runner.run()
 
     assert_stdout_lines(
-        u"\n"
-        u"Funcionalidade: melhorar o output de snippets do lettuce                                      # tests/functional/output_features/latin-accents/latin-accents.feature:2\n"
-        u"  Como autor do lettuce                                                                       # tests/functional/output_features/latin-accents/latin-accents.feature:3\n"
-        u"  Eu quero ter um output refinado de snippets                                                 # tests/functional/output_features/latin-accents/latin-accents.feature:4\n"
-        u"  Para melhorar, de uma forma geral, a vida do programador                                    # tests/functional/output_features/latin-accents/latin-accents.feature:5\n"
-        u"\n"
-        u"  Cenário: normalizar snippets com unicode                                                    # tests/functional/output_features/latin-accents/latin-accents.feature:7\n"
-        u"    Dado que eu tenho palavrões e outras situações                                            # tests/functional/output_features/latin-accents/latin-accents.feature:8 (undefined)\n"
-        u"    E várias palavras acentuadas são úteis, tais como: \"(é,não,léo,chororó,chácara,epígrafo)\" # tests/functional/output_features/latin-accents/latin-accents.feature:9 (undefined)\n"
-        u"    Então eu fico felizão                                                                     # tests/functional/output_features/latin-accents/latin-accents.feature:10 (undefined)\n"
-        u"\n"
-        u"1 feature (0 passed)\n"
-        u"1 scenario (0 passed)\n"
-        u"3 steps (3 undefined, 0 passed)\n"
-        u"\n"
-        u"You can implement step definitions for undefined steps with these snippets:\n"
-        u"\n"
-        u"# -*- coding: utf-8 -*-\n"
-        u"from lettuce import step\n"
-        u"\n"
-        u"@step(u'Dado que eu tenho palavrões e outras situações')\n"
-        u"def dado_que_eu_tenho_palavroes_e_outras_situacoes(step):\n"
-        u"    assert False, 'This step must be implemented'\n"
-        u"@step(u'E várias palavras acentuadas são úteis, tais como: \"([^\"]*)\"')\n"
-        u"def e_varias_palavras_acentuadas_sao_uteis_tais_como_group1(step, group1):\n"
-        u"    assert False, 'This step must be implemented'\n"
-        u"@step(u'Então eu fico felizão')\n"
-        u"def entao_eu_fico_felizao(step):\n"
-        u"    assert False, 'This step must be implemented'\n"
+        "\n"
+        "Funcionalidade: melhorar o output de snippets do lettuce                                      # tests/functional/output_features/latin-accents/latin-accents.feature:2\n"
+        "  Como autor do lettuce                                                                       # tests/functional/output_features/latin-accents/latin-accents.feature:3\n"
+        "  Eu quero ter um output refinado de snippets                                                 # tests/functional/output_features/latin-accents/latin-accents.feature:4\n"
+        "  Para melhorar, de uma forma geral, a vida do programador                                    # tests/functional/output_features/latin-accents/latin-accents.feature:5\n"
+        "\n"
+        "  Cenário: normalizar snippets com unicode                                                    # tests/functional/output_features/latin-accents/latin-accents.feature:7\n"
+        "    Dado que eu tenho palavrões e outras situações                                            # tests/functional/output_features/latin-accents/latin-accents.feature:8 (undefined)\n"
+        "    E várias palavras acentuadas são úteis, tais como: \"(é,não,léo,chororó,chácara,epígrafo)\" # tests/functional/output_features/latin-accents/latin-accents.feature:9 (undefined)\n"
+        "    Então eu fico felizão                                                                     # tests/functional/output_features/latin-accents/latin-accents.feature:10 (undefined)\n"
+        "\n"
+        "1 feature (0 passed)\n"
+        "1 scenario (0 passed)\n"
+        "3 steps (3 undefined, 0 passed)\n"
+        "\n"
+        "You can implement step definitions for undefined steps with these snippets:\n"
+        "\n"
+        "# -*- coding: utf-8 -*-\n"
+        "from lettuce import step\n"
+        "\n"
+        "@step(u'Dado que eu tenho palavrões e outras situações')\n"
+        "def dado_que_eu_tenho_palavroes_e_outras_situacoes(step):\n"
+        "    assert False, 'This step must be implemented'\n"
+        "@step(u'E várias palavras acentuadas são úteis, tais como: \"([^\"]*)\"')\n"
+        "def e_varias_palavras_acentuadas_sao_uteis_tais_como_group1(step, group1):\n"
+        "    assert False, 'This step must be implemented'\n"
+        "@step(u'Então eu fico felizão')\n"
+        "def entao_eu_fico_felizao(step):\n"
+        "    assert False, 'This step must be implemented'\n"
     )
 
 
@@ -942,8 +943,8 @@ def test_output_level_2_fail():
         "List of failed scenarios:\n"
         "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
         "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
+            'lettuce_core_file': abspath(lettuce_path('core.py')).replace('\\', '/'),
+            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')).replace('\\', '/'),
             'call_line': call_line,
         }
     )
@@ -977,7 +978,7 @@ def test_output_level_2_error():
         "  Scenario: It should raise an exception different of AssertionError # tests/functional/output_features/error_traceback/error_traceback.feature:5\n"
         "\n" % {
             'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')),
+            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')).replace('\\', '/'),
             'call_line': call_line,
         }
     )
@@ -1025,7 +1026,7 @@ def test_output_level_1_fail():
         "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
         "\n" % {
             'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
+            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')).replace('\\', '/'),
             'call_line': call_line,
         }
     )
@@ -1057,7 +1058,7 @@ def test_output_level_1_error():
         "  Scenario: It should raise an exception different of AssertionError # tests/functional/output_features/error_traceback/error_traceback.feature:5\n"
         "\n" % {
             'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')),
+            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')).replace('\\', '/'),
             'call_line': call_line,
         }
     )
@@ -1164,16 +1165,16 @@ def test_background_with_header():
 
     from lettuce import step, world
 
-    @step(ur'the variable "(\w+)" holds (\d+)')
+    @step(r'the variable "(\w+)" holds (\d+)')
     def set_variable(step, name, value):
         setattr(world, name, int(value))
 
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
+    @step(r'the variable "(\w+)" is equal to (\d+)')
     def check_variable(step, name, expected):
         expected = int(expected)
         expect(world).to.have.property(name).being.equal(expected)
 
-    @step(ur'the variable "(\w+)" times (\d+) is equal to (\d+)')
+    @step(r'the variable "(\w+)" times (\d+) is equal to (\d+)')
     def multiply_and_verify(step, name, times, expected):
         times = int(times)
         expected = int(expected)
@@ -1202,25 +1203,25 @@ def test_background_without_header():
 
     @before.each_background
     def register_background_before(background):
-        actions['before'] = unicode(background)
+        actions['before'] = str(background)
 
     @after.each_background
     def register_background_after(background, results):
         actions['after'] = {
-            'background': unicode(background),
+            'background': str(background),
             'results': results,
         }
 
-    @step(ur'the variable "(\w+)" holds (\d+)')
+    @step(r'the variable "(\w+)" holds (\d+)')
     def set_variable(step, name, value):
         setattr(world, name, int(value))
 
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
+    @step(r'the variable "(\w+)" is equal to (\d+)')
     def check_variable(step, name, expected):
         expected = int(expected)
         expect(world).to.have.property(name).being.equal(expected)
 
-    @step(ur'the variable "(\w+)" times (\d+) is equal to (\d+)')
+    @step(r'the variable "(\w+)" times (\d+) is equal to (\d+)')
     def multiply_and_verify(step, name, times, expected):
         times = int(times)
         expected = int(expected)
@@ -1241,11 +1242,10 @@ def test_background_without_header():
     expect(actions).to.equal({
         'after': {
             'results': [True],
-            'background': u'<Background for feature: Without Header>'
+            'background': '<Background for feature: Without Header>'
         },
-        'before': u'<Background for feature: Without Header>'
+        'before': '<Background for feature: Without Header>'
     })
-
 
 @with_setup(prepare_stdout)
 def test_output_background_with_success_colorless():
@@ -1253,14 +1253,16 @@ def test_output_background_with_success_colorless():
 
     from lettuce import step
 
-    line = currentframe().f_lineno  # get line number
-    @step(ur'the variable "(\w+)" holds (\d+)')
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
+    line = getframeinfo(currentframe()).lineno  # get line number
+    @step(r'the variable "(\w+)" holds (\d+)')
+    @step(r'the variable "(\w+)" is equal to (\d+)')
     def just_pass(step, *args):
         pass
 
     filename = bg_feature_name('simple')
     runner = Runner(filename, verbosity=3)
+
+
 
     runner.run()
 
@@ -1291,8 +1293,8 @@ def test_output_background_with_success_colorful():
     from lettuce import step
 
     line = currentframe().f_lineno  # get line number
-    @step(ur'the variable "(\w+)" holds (\d+)')
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
+    @step(r'the variable "(\w+)" holds (\d+)')
+    @step(r'the variable "(\w+)" is equal to (\d+)')
     def just_pass(step, *args):
         pass
 
@@ -1333,16 +1335,16 @@ def test_background_with_scenario_before_hook():
     def reset_variable(scenario):
         world.X = None
 
-    @step(ur'the variable "(\w+)" holds (\d+)')
+    @step(r'the variable "(\w+)" holds (\d+)')
     def set_variable(step, name, value):
         setattr(world, name, int(value))
 
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
+    @step(r'the variable "(\w+)" is equal to (\d+)')
     def check_variable(step, name, expected):
         expected = int(expected)
         expect(world).to.have.property(name).being.equal(expected)
 
-    @step(ur'the variable "(\w+)" times (\d+) is equal to (\d+)')
+    @step(r'the variable "(\w+)" times (\d+) is equal to (\d+)')
     def multiply_and_verify(step, name, times, expected):
         times = int(times)
         expected = int(expected)
@@ -1401,7 +1403,7 @@ def test_feature_missing_scenarios():
     assert_raises(SystemExit, runner.run)
 
     assert_stderr_lines(
-        u"Syntax error at: %s\n"
+        "Syntax error at: %s\n"
         "Features must have scenarios.\nPlease refer to the documentation "
         "available at http://lettuce.it for more information.\n" % filename
     )

@@ -47,7 +47,7 @@ after.all(reporter.print_end)
 def print_no_features_found(where):
     where = core.fs.relpath(where)
     if not where.startswith(os.sep):
-        where = '.%s%s' % (os.sep, where)
+        where = '.%s%s' % ('/', where)
 
     reporter.wrt('Oops!\n')
     reporter.wrt('could not find features at %s\n' % where)

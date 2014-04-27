@@ -77,7 +77,7 @@ def test_step_has_repr():
     step = Step.from_string(I_HAVE_TASTY_BEVERAGES)
     assert_equals(
         repr(step),
-        '<Step: "' + string.split(I_HAVE_TASTY_BEVERAGES, '\n')[0] + '">'
+        '<Step: "' + I_HAVE_TASTY_BEVERAGES.split('\n')[0] + '">'
     )
 
 def test_can_get_sentence_from_string():
@@ -89,7 +89,7 @@ def test_can_get_sentence_from_string():
 
     assert_equals(
         step.sentence,
-        string.split(I_HAVE_TASTY_BEVERAGES, '\n')[0]
+        I_HAVE_TASTY_BEVERAGES.split('\n')[0]
     )
 
 def test_can_parse_keys_from_table():
@@ -128,7 +128,7 @@ def test_can_parse_a_unary_array_from_single_step():
     steps = Step.many_from_lines(I_HAVE_TASTY_BEVERAGES.splitlines())
     assert_equals(len(steps), 1)
     assert isinstance(steps[0], Step)
-    assert_equals(steps[0].sentence, string.split(I_HAVE_TASTY_BEVERAGES, '\n')[0])
+    assert_equals(steps[0].sentence, I_HAVE_TASTY_BEVERAGES.split('\n')[0])
 
 def test_can_parse_a_unary_array_from_complicated_step():
     "It should extract a single tabular step correctly into an array of steps"
@@ -144,7 +144,7 @@ def test_can_parse_regular_step_followed_by_tabular_step():
     assert isinstance(steps[0], Step)
     assert isinstance(steps[1], Step)
     assert_equals(steps[0].sentence, I_LIKE_VEGETABLES)
-    assert_equals(steps[1].sentence, string.split(I_HAVE_TASTY_BEVERAGES, '\n')[0])
+    assert_equals(steps[1].sentence, I_HAVE_TASTY_BEVERAGES.split('\n')[0])
 
 def test_can_parse_tabular_step_followed_by_regular_step():
     "It should correctly extract two steps (one tabular, one regular) into an array."
@@ -152,7 +152,7 @@ def test_can_parse_tabular_step_followed_by_regular_step():
     assert_equals(len(steps), 2)
     assert isinstance(steps[0], Step)
     assert isinstance(steps[1], Step)
-    assert_equals(steps[0].sentence, string.split(I_HAVE_TASTY_BEVERAGES, '\n')[0])
+    assert_equals(steps[0].sentence, I_HAVE_TASTY_BEVERAGES.split('\n')[0])
     assert_equals(steps[1].sentence, I_LIKE_VEGETABLES)
 
 def test_can_parse_two_ordinary_steps():
@@ -167,7 +167,7 @@ def test_can_parse_two_ordinary_steps():
 def test_can_parse_background_and_ignore_tag():
     "It should correctly parse and ignore tags between the background and first step."
     steps = Step.many_from_lines(BACKGROUND_WITH_TAGGED_SCENARIO.splitlines())
-    steps_without_tags = filter(lambda x: not x.sentence == '@wip', steps)
+    steps_without_tags = [x for x in steps if not x.sentence == '@wip']
     assert_equals(len(steps), len(steps_without_tags))
 
 def test_cannot_start_with_multiline():
@@ -183,7 +183,7 @@ def test_multiline_is_part_of_previous_step():
     "It should correctly parse a multi-line string as part of the preceding step"
     lines = strings.get_stripped_lines(MULTI_LINE)
     steps = Step.many_from_lines(lines)
-    print steps
+    print(steps)
     assert_equals(len(steps), 1)
     assert isinstance(steps[0], Step)
     assert_equals(steps[0].sentence, 'I have a string like so:')
@@ -191,7 +191,7 @@ def test_multiline_is_part_of_previous_step():
 def test_multiline_is_parsed():
     step = Step.from_string(MULTI_LINE)
     assert_equals(step.sentence, 'I have a string like so:')
-    assert_equals(step.multiline, u"""This is line one
+    assert_equals(step.multiline, """This is line one
 and this is line two
 and this is line three
 and this is line four,
@@ -201,7 +201,7 @@ with spaces at the beginning""")
 def test_multiline_with_whitespace():
     step = Step.from_string(MULTI_LINE_WHITESPACE)
     assert_equals(step.sentence, 'I have a string like so:')
-    assert_equals(step.multiline, u"""This is line one
+    assert_equals(step.multiline, """This is line one
 and this is line two
 and this is line three
   and this is line four,
@@ -226,10 +226,10 @@ def test_hashes__first_attr_raises_assertion_error_if_empty():
     try:
         step.hashes.first
         failed = False
-    except AssertionError, e:
+    except AssertionError as e:
         failed = True
         assert_equals(
-            unicode(e),
+            str(e),
             'The step "%s" have no table defined, so that you can\'t use step.hashes.first' % I_DIE_HAPPY
         )
 
@@ -253,10 +253,10 @@ def test_hashes__last_attr_raises_assertion_error_if_empty():
     try:
         step.hashes.last
         failed = False
-    except AssertionError, e:
+    except AssertionError as e:
         failed = True
         assert_equals(
-            unicode(e),
+            str(e),
             'The step "%s" have no table defined, so that you can\'t use step.hashes.last' % I_DIE_HAPPY
         )
 
@@ -276,10 +276,10 @@ def test_handy_function_for_table_members_fail_giving_assertionerror():
     try:
         step.hashes.values_under('Foobar')
         failed = False
-    except AssertionError, e:
+    except AssertionError as e:
         failed = True
         assert_equals(
-            unicode(e),
+            str(e),
             'The step "I have the following tasty beverages in my freezer:" ' \
             'have no table column with the key "Foobar". ' \
             'Could you check your step definition for that ? ' \
