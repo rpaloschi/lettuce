@@ -183,7 +183,7 @@ def test_multiline_is_part_of_previous_step():
     "It should correctly parse a multi-line string as part of the preceding step"
     lines = strings.get_stripped_lines(MULTI_LINE)
     steps = Step.many_from_lines(lines)
-    print(steps)
+    #print(steps)
     assert_equals(len(steps), 1)
     assert isinstance(steps[0], Step)
     assert_equals(steps[0].sentence, 'I have a string like so:')

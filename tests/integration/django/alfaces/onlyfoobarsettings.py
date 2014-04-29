@@ -1,6 +1,8 @@
-from settings import *
+DEBUG = True
+ROOT_URLCONF = 'urls'
+SECRET_KEY = 'secret'
 
-LETTUCE_APPS = (
+INSTALLED_APPS = (
     'foobar',
+    'lettuce.django',
 )
-

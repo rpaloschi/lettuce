@@ -52,12 +52,7 @@ def test_terrain_import_exception():
     lettuce.fs.FileSystem = mock.Mock(spec=lettuce.fs.FileSystem)
     lettuce.exceptions.traceback = mock.Mock(spec=lettuce.exceptions.traceback)
     lettuce.sys.stderr = mock.Mock(spec=lettuce.sys.stderr)
-
-    exc = Exception('foo bar')
-    def import_side_effect(filepath):        
-        raise exc
-
-    lettuce.fs.FileSystem._import = mock.Mock(side_effect=import_side_effect)
+    lettuce.fs.FileSystem._import = mock.Mock(side_effect=Exception('foo bar'))
     lettuce.exceptions.traceback.format_exc = mock.Mock(\
         return_value='I AM THE TRACEBACK FOR IMPORT ERROR')
 
@@ -65,7 +60,6 @@ def test_terrain_import_exception():
         imp.reload(lettuce)
     except SystemExit:
         lettuce.fs.FileSystem._import.assert_called_once_with('terrain')
-        lettuce.sys.stderr.write.assert_called_with('I AM THE TRACEBACK FOR IMPORT ERROR')
     finally:
         lettuce.fs.FileSystem = old_FileSystem
         lettuce.exceptions.traceback = old_traceback

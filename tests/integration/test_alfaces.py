@@ -14,48 +14,56 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import os
-import time
-import commands
 import multiprocessing
+import os
+import signal
+import subprocess
+import sys
+import time
+import tornado.ioloop
+import tornado.web
 
-from tests.asserts import assert_equals, assert_not_equals
 from lettuce.fs import FileSystem
+from tests.asserts import assert_equals, assert_not_equals
+
 current_directory = FileSystem.dirname(__file__)
+
+python_path = sys.executable
+
+
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("Hello, world")
+        raise SystemExit()
+
+def runserver(port):
+    application = tornado.web.Application([
+        (r"/", MainHandler),
+    ])
+    application.listen(port)
+    tornado.ioloop.IOLoop.instance().start()
 
 
 @FileSystem.in_directory(current_directory, 'django', 'alfaces')
 def test_django_agains_alfaces():
     'running the "harvest" django command with verbosity 3'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "Test the django app DO NOTHING" in out
     assert "Test the django app FOO BAR" in out
 
 
+def runserver_8000():
+    runserver(8000)
+
 @FileSystem.in_directory(current_directory, 'django', 'alfaces')
 def test_django_background_server_running_in_background():
     'the django builtin server fails if the HTTP port is not available'
 
-    import tornado.ioloop
-    import tornado.web
-
-    class MainHandler(tornado.web.RequestHandler):
-        def get(self):
-            self.write("Hello, world")
-            raise SystemExit()
-
-    def runserver():
-        application = tornado.web.Application([
-            (r"/", MainHandler),
-        ])
-        application.listen(8000)
-        tornado.ioloop.IOLoop.instance().start()
-
-    server = multiprocessing.Process(target=runserver)
+    server = multiprocessing.Process(target=runserver_8000)
     server.start()
     time.sleep(1)  # the child process take some time to get up
 
@@ -66,35 +74,23 @@ def test_django_background_server_running_in_background():
         'python manage.py --no-server'
 
     try:
-        status, out = commands.getstatusoutput(
-            "python manage.py harvest --verbosity=3")
+        status, out = subprocess.getstatusoutput(
+            "%s manage.py harvest --verbosity=3" % (python_path,))
+
         assert_equals(out, e)
         assert_not_equals(status, 0)
-
     finally:
         os.kill(server.pid, 9)
 
+
+def runserver_9889():
+    runserver(9889)
 
 @FileSystem.in_directory(current_directory, 'django', 'alfaces')
 def test_django_background_server_running_in_background_with_custom_port():
     'the harvest command should take a --port argument'
 
-    import tornado.ioloop
-    import tornado.web
-
-    class MainHandler(tornado.web.RequestHandler):
-        def get(self):
-            self.write("Hello, world")
-            raise SystemExit()
-
-    def runserver():
-        application = tornado.web.Application([
-            (r"/", MainHandler),
-        ])
-        application.listen(9889)
-        tornado.ioloop.IOLoop.instance().start()
-
-    server = multiprocessing.Process(target=runserver)
+    server = multiprocessing.Process(target=runserver_9889)
     server.start()
     time.sleep(1)  # the child process take some time to get up
 
@@ -105,8 +101,8 @@ def test_django_background_server_running_in_background_with_custom_port():
         'python manage.py --no-server'
 
     try:
-        status, out = commands.getstatusoutput(
-            "python manage.py harvest --verbosity=3 --port=9889")
+        status, out = subprocess.getstatusoutput(
+            "%s manage.py harvest --verbosity=3 --port=9889" % (python_path,))
         assert_equals(out, e)
         assert_not_equals(status, 0)
 
@@ -118,8 +114,8 @@ def test_django_background_server_running_in_background_with_custom_port():
 def test_limit_by_app_getting_all_apps_by_comma():
     'running "harvest" with --apps=multiple,apps,separated,by,comma'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 --apps=foobar,donothing")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 --apps=foobar,donothing" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "Test the django app DO NOTHING" in out
@@ -130,8 +126,8 @@ def test_limit_by_app_getting_all_apps_by_comma():
 def test_limit_by_app_getting_one_app():
     'running "harvest" with --apps=one_app'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 --apps=foobar")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 --apps=foobar" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "Test the django app DO NOTHING" not in out
@@ -142,8 +138,8 @@ def test_limit_by_app_getting_one_app():
 def test_excluding_apps_separated_by_comma():
     'running "harvest" with --avoid-apps=multiple,apps'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 --avoid-apps=donothing,foobar")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 --avoid-apps=donothing,foobar" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "Test the django app DO NOTHING" not in out
@@ -154,8 +150,8 @@ def test_excluding_apps_separated_by_comma():
 def test_excluding_app():
     'running "harvest" with --avoid-apps=one_app'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 --avoid-apps=donothing")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 --avoid-apps=donothing" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "Test the django app DO NOTHING" not in out
@@ -167,8 +163,8 @@ def test_running_only_apps_within_lettuce_apps_setting():
     'running the "harvest" will run only on configured apps if the ' \
              'setting LETTUCE_APPS is set'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --settings=onlyfoobarsettings --verbosity=3")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --settings=onlyfoobarsettings --verbosity=3" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "Test the django app FOO BAR" in out
@@ -180,9 +176,9 @@ def test_running_all_apps_but_lettuce_avoid_apps():
     'running the "harvest" will run all apps but those within ' \
              'LETTUCE_AVOID_APPS'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --settings=allbutfoobarsettings " \
-        "--verbosity=3")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --settings=allbutfoobarsettings " \
+        "--verbosity=3" % (python_path,))
 
     assert_equals(status, 0, out)
 
@@ -195,9 +191,9 @@ def test_ignores_settings_avoid_apps_if_apps_argument_is_passed():
     'even if all apps are avoid in settings, it is possible to run a single ' \
           'app by --apps argument'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --settings=avoidallappssettings "
-        "--verbosity=3 --apps=foobar,donothing")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --settings=avoidallappssettings " \
+        "--verbosity=3 --apps=foobar,donothing" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "Test the django app FOO BAR" in out
@@ -208,8 +204,8 @@ def test_ignores_settings_avoid_apps_if_apps_argument_is_passed():
 def test_no_server():
     '"harvest" --no-server does not start the server'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 --apps=foobar --no-server")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 --apps=foobar --no-server" % (python_path,))
 
     assert_equals(status, 0, out)
     assert "Django's builtin server is running at" not in out
@@ -220,8 +216,8 @@ def test_django_specifying_scenarios_to_run():
     'django harvest can run only specified scenarios with ' \
             '--scenarios or -s options'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 --scenarios=2,5 -a foobar")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 --scenarios=2,5 -a foobar" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "2nd scenario" in out
@@ -238,8 +234,8 @@ def test_django_specifying_scenarios_to_run_by_tag():
     'django harvest can run only specified scenarios with ' \
             '--tags or -t options'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 --tag=fast -a foobar")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 --tag=fast -a foobar" % (python_path,))
     assert_equals(status, 0, out)
 
     assert "3rd scenario" in out
@@ -255,9 +251,9 @@ def test_django_specifying_scenarios_to_run_by_tag():
 def test_running_only_specified_features():
     'it can run only the specified features, passing the file path'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 " \
-        "foobar/features/foobar.feature")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 " \
+        "foobar/features/foobar.feature" % (python_path,))
 
     assert_equals(status, 0, out)
 
@@ -269,9 +265,9 @@ def test_running_only_specified_features():
 def test_specifying_features_in_inner_directory():
     'it can run only the specified features from a subdirectory'
 
-    status, out = commands.getstatusoutput(
-        "python manage.py harvest --verbosity=3 " \
-        "foobar/features/deeper/deeper/leaf.feature")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=3 " \
+        "foobar/features/deeper/deeper/leaf.feature" % (python_path,))
 
     assert_equals(status, 0, out)
 

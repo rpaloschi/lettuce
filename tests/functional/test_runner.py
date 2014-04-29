@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
+import io
+import sys
 import random
 import lettuce
 from mock import Mock, patch
@@ -32,6 +34,7 @@ from lettuce import Runner
 from tests.asserts import assert_lines
 from tests.asserts import prepare_stderr
 from tests.asserts import prepare_stdout
+from tests.asserts import disable_colorama
 from tests.asserts import assert_stderr_lines
 from tests.asserts import assert_stdout_lines
 from tests.asserts import assert_stderr_lines_with_traceback
@@ -59,8 +62,11 @@ syntax_feature_name = lambda name: joiner(sjoin, name)
 tag_feature_name = lambda name: joiner(tjoin, name)
 bg_feature_name = lambda name: joiner(bjoin, name)
 
+def disable_colorama_and_prepare_stderr():
+    disable_colorama()
+    prepare_stderr()
 
-@with_setup(prepare_stderr)
+@with_setup(disable_colorama_and_prepare_stderr)
 def test_try_to_import_terrain():
     "Runner tries to import terrain, but has a nice output when it fail"
     sandbox_path = ojoin('..', 'sandbox')

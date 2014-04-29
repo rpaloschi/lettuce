@@ -1,6 +1,6 @@
 DEBUG = True
 
-ROOT_URLCONF = 'alfaces.urls'
+ROOT_URLCONF = 'urls'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.

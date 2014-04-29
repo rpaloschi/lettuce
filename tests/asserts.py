@@ -16,27 +16,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import sys
+from mock import MagicMock
 from io import StringIO
 from nose.tools import assert_equals, assert_not_equals
 from lettuce import registry
 from difflib import Differ
 
-
+def disable_colorama():
+    try:
+        import colorama
+        colorama.init = MagicMock()
+    except:
+        pass
 
 def prepare_stdout():
     registry.clear()
     if isinstance(sys.stdout, StringIO):
         del sys.stdout
-    std = StringIO()
-    sys.stdout = std
+    sys.stdout = StringIO()
 
 def prepare_stderr():
     registry.clear()
     if isinstance(sys.stderr, StringIO):
         del sys.stderr
-    std = StringIO()
-    sys.stderr = std
-
+    sys.stderr = StringIO()
 
 def assert_lines(original, expected):
     assert_lines_unicode(original, expected)

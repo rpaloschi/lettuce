@@ -1,5 +1,6 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import url
 
-urlpatterns = patterns('',
-    url(r'', 'alfaces.donothing.views.index')
-)
+urlpatterns = [
+    url(r'^$', 'donothing.views.index')
+]
+

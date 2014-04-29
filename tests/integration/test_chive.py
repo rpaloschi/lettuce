@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
-import commands
+import subprocess
 
 from lettuce.fs import FileSystem
 from tests.asserts import assert_not_equals
@@ -37,16 +37,16 @@ def test_django_admin_media_serving_on_django_13():
     'lettuce should serve admin static files properly on Django 1.3'
 
     os.environ['PYTHONPATH'] = "%s:%s" % (
-        FileSystem.join(lib_directory, 'Django-1.3'),
+        FileSystem.join(lib_directory, 'Django-1.6.2'),
         OLD_PYTHONPATH,
     )
 
-    status, out = commands.getstatusoutput(
+    status, out = subprocess.getstatusoutput(
         "python manage.py harvest --verbosity=2 ./features/")
 
     assert_not_equals(status, 0)
 
     lines = out.splitlines()
 
-    assert u"Preparing to serve django's admin site static files..." in lines
-    assert u"Django's builtin server is running at 0.0.0.0:7000" in lines
+    assert "Preparing to serve django's admin site static files..." in lines
+    assert "Django's builtin server is running at 0.0.0.0:7000" in lines

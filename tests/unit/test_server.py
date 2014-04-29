@@ -14,20 +14,23 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# import lettuce
-# import os
-# import subprocess
-# import sys
-# from nose.tools import assert_equals
-# from lettuce.fs import FileSystem
 
-# current_directory = FileSystem.dirname(__file__)
-# def test_server_threading():
-#     """
-#     Test django httpd threading
-#     """
-#     FileSystem.pushd(current_directory, "django", "coconut")
-#     status, out = subprocess.getstatusoutput(
-#         "python manage.py harvest --verbosity=1")
-    
-#     assert_equals(status, 0, out)
+import sys
+import subprocess
+from nose.tools import assert_equals
+from lettuce.fs import FileSystem
+
+current_directory = FileSystem.dirname(__file__)
+
+def test_server_threading():
+    """
+    Test django httpd threading
+    """
+    python_path = sys.executable
+
+    FileSystem.pushd(current_directory, "django", "coconut")
+    status, out = subprocess.getstatusoutput(
+        "%s manage.py harvest --verbosity=1" % (python_path,))
+
+    print("OUT:", out)
+    assert_equals(status, 0, out)

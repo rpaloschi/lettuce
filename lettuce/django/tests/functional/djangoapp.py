@@ -6,15 +6,17 @@ See: http://olifante.blogs.com/covil/2010/04/minimal-django.html
 
 """
 import os
-from django.conf.urls.defaults import patterns
+from django.conf.urls import url
 from django.core.mail import send_mail
 
 from django.http import HttpResponse
+
 filepath, extension = os.path.splitext(__file__)
 ROOT_URLCONF = os.path.basename(filepath)
+
 INSTALLED_APPS = (
     "lettuce.django"
-    )
+)
 
 
 def mail(request):
@@ -22,4 +24,4 @@ def mail(request):
              ['to@example.com'], fail_silently=False)
     return HttpResponse('Mail has been sent')
 
-urlpatterns = patterns('', (r'^mail/$', mail))
+urlpatterns = [url(r'^mail/$', mail)]
