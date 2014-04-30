@@ -2,6 +2,7 @@ import os
 from django.conf import settings
 from lettuce import step
 from nose.tools import assert_equals
+
 @step(r'django has debug enabled')
 def debug_enabled(step):
     assert settings.DEBUG is True
