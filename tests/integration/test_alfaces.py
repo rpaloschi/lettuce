@@ -45,7 +45,7 @@ def runserver(port):
 
 
 @FileSystem.in_directory(current_directory, 'django', 'alfaces')
-def test_django_agains_alfaces():
+def test_django_against_alfaces():
     'running the "harvest" django command with verbosity 3'
 
     status, out = subprocess.getstatusoutput(
