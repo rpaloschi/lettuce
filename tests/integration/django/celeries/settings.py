@@ -1,6 +1,6 @@
 DEBUG = True
 
-ROOT_URLCONF = 'couves.urls'
+ROOT_URLCONF = 'urls'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
@@ -14,5 +14,6 @@ DATABASES = {
 INSTALLED_APPS = (
     'lettuce.django',
     'leaves',
+    'south',
 )
 SECRET_KEY = 'secret'
