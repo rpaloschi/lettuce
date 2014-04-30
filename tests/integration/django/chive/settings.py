@@ -2,19 +2,19 @@
 from os.path import dirname, abspath, join
 LOCAL_FILE = lambda *path: abspath(join(dirname(__file__), *path))
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
-)
-
-MANAGERS = ADMINS
+# ADMINS = (
+#      ('Your Name', 'your_email@domain.com'),
+# )
+#
+# MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': '', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.django.db.backends.sqlite3
+        'NAME': '',                      # Or path to database file if using sqlite3. chive.sqlite
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -70,7 +70,8 @@ STATIC_ROOT = ''
 STATIC_URL = '/static/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'gw$-1dpq0k8xc+fqkywqr0$c3^fg)x!ym*^46=jmc@ql&z)pr8'
+#SECRET_KEY = 'gw$-1dpq0k8xc+fqkywqr0$c3^fg)x!ym*^46=jmc@ql&z)pr8'
+SECRET_KEY = 'secret'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -79,22 +80,29 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
-ROOT_URLCONF = 'chive.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATE_DIRS = (
     LOCAL_FILE('templates'),
 )
 
+
+
+
 INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.admin',
+    # 'django.contrib.auth',
+    # 'django.contrib.contenttypes',
+    # 'django.contrib.sessions',
+    # 'django.contrib.sites',
+    # 'django.contrib.admin',
+    'django.contrib.staticfiles',
     'lettuce.django',
+    'south',
 )
+
 LETTUCE_SERVER_PORT = 7000
 STATIC_FILES_AT = LOCAL_FILE('static-files')
+
 STATICFILES_DIRS = [
     STATIC_FILES_AT,
 ]

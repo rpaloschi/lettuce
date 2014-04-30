@@ -1,5 +1,6 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import url
 
-urlpatterns = patterns('',
-    url(r'', 'couves.leaves.views.index'),
-)
+urlpatterns = [
+    url(r'', 'leaves.views.index'),
+]
+

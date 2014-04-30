@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.conf.urls.defaults import *
+from django.conf.urls import url
 
-urlpatterns = patterns('',
-    (r'^ouch', 'views.ouch'),
-)
+urlpatterns = [
+    url(r'^ouch', 'views.ouch'),
+]

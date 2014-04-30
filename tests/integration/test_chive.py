@@ -42,7 +42,7 @@ def test_django_admin_media_serving_on_django_13():
     )
 
     status, out = subprocess.getstatusoutput(
-        "python manage.py harvest --verbosity=2 ./features/")
+        "%s manage.py harvest --verbosity=2 ./features/" % sys.executable)
 
     assert_not_equals(status, 0)
 
