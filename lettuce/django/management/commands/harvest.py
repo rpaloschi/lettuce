@@ -153,7 +153,7 @@ class Command(BaseCommand):
 
             call_command('syncdb', verbosity=0, interactive=False,)
             if migrate_south:
-               call_command('migrate', verbosity=0, interactive=False,)
+                call_command('migrate', verbosity=0, interactive=False,)
 
         settings.DEBUG = options.get('debug', False)
 

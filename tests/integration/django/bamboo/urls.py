@@ -1,5 +1,5 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import url
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'', 'leaves.views.index'),
-)
+]

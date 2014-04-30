@@ -13,6 +13,7 @@ DATABASES = {
 }
 INSTALLED_APPS = (
     'lettuce.django',
+    'south',
     'leaves',
 )
 SECRET_KEY = 'secret'

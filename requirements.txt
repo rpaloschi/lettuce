@@ -1,6 +1,7 @@
 Django==1.6.2
 Jinja2==2.7.2
 MarkupSafe==0.21
+PyYAML==3.11
 Pygments==1.6
 South==0.8.4
 Sphinx==1.2.2
@@ -10,7 +11,7 @@ docutils==0.11
 ecdsa==0.11
 extras==0.0.3
 fuzzywuzzy==0.2
--e git+https://github.com/rpaloschi/lettuce.git@2538874e5b267c5203250b275979e659cbcb5514#egg=lettuce-master
+-e git+https://github.com/rpaloschi/lettuce.git@1cb278e58972735e7410e98968729cc3c8517289#egg=lettuce-master
 lxml==3.3.5
 mock==1.0.1
 nose==1.3.1

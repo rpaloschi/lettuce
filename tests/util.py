@@ -1,6 +1,7 @@
 """
 Utils for testing
 """
+import sys
 import subprocess
 
 
@@ -24,7 +25,8 @@ def run_scenario(application='', feature='', scenario='', **opts):
 
         opts_string = ' '.join((opts_string, opt, val))
 
-    cmd = 'python manage.py harvest -v 3 -T {0}{1}{2}{3}'.format(opts_string,
+    cmd = '{0} manage.py harvest -v 3 -T {1}{2}{3}{4}'.format(sys.executable,
+                                                                 opts_string,
                                                                  application,
                                                                  feature,
                                                                  scenario,
