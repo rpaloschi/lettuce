@@ -14,6 +14,7 @@ DATABASES = {
 INSTALLED_APPS = (
     'lettuce.django',
     'leaves',
+    'south',
 )
 SECRET_KEY = 'secret'
 STATIC_URL = '/static/'
