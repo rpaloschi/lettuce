@@ -33,8 +33,8 @@ def teardown():
 
 
 @FileSystem.in_directory(current_directory, 'django', 'grocery')
-def test_django_admin_media_serving_on_django_13():
-    'lettuce should serve admin static files properly on Django 1.3'
+def test_django_admin_media_serving_on_django_13_and_up():
+    'lettuce should serve admin static files properly on Django 1.3 and up'
 
     os.environ['PYTHONPATH'] = "%s:%s" % (
         FileSystem.join(lib_directory, 'Django-1.6.2'),
@@ -42,7 +42,7 @@ def test_django_admin_media_serving_on_django_13():
     )
 
     status, out = subprocess.getstatusoutput(
-        "python manage.py harvest --verbosity=2 ./features/")
+        "%s manage.py harvest --verbosity=2 ./features/" % sys.executable)
 
     assert_equals(status, 0, out)
 
@@ -55,61 +55,3 @@ def test_django_admin_media_serving_on_django_13():
     assert 'Fetching CSS files: ... OK' in lines
     assert 'Fetching javascript files: ... OK' in lines
     assert "Django's builtin server is running at 0.0.0.0:7000" in lines
-
-
-@FileSystem.in_directory(current_directory, 'django', 'grocery')
-def test_django_admin_media_serving_on_django_125():
-    'lettuce should serve admin static files properly on Django 1.2.5'
-
-    os.environ['PYTHONPATH'] = "%s:%s" % (
-        FileSystem.join(lib_directory, 'Django-1.6.2'),
-        OLD_PYTHONPATH,
-    )
-
-    status, out = subprocess.getstatusoutput(
-        "python manage.py harvest --verbosity=2 ./features/")
-
-    assert_equals(status, 0, out)
-
-    lines = out.splitlines()
-    f = '\n\n'
-    f += '*' * 100
-    f += '\n' + '\n'.join(lines)
-
-    assert "Preparing to serve django's admin site static files..." in lines, f
-    assert "Django's builtin server is running at 0.0.0.0:7000" in lines, f
-    assert 'Running on port 7000 ... OK' in lines, f
-    assert 'Fetching admin media ... OK' in lines, f
-    assert 'Fetching static files ... OK' in lines, f
-    assert 'Fetching CSS files: ... OK' in lines, f
-    assert 'Fetching javascript files: ... OK' in lines, f
-
-
-@FileSystem.in_directory(current_directory, 'django', 'grocery')
-def test_django_admin_media_serving_forced_by_setting():
-    'settings.LETTUCE_SERVE_ADMIN_MEDIA forces lettuce to serve admin assets'
-
-    os.environ['PYTHONPATH'] = "%s:%s" % (
-        FileSystem.join(lib_directory, 'Django-1.6.2'),
-        OLD_PYTHONPATH,
-    )
-
-    extra_args = " --scenarios=1,3,4,5 --settings=settings_without_admin"
-
-    status, out = subprocess.getstatusoutput(
-        "python manage.py harvest --verbosity=2 ./features/ %s" % extra_args)
-
-    assert_equals(status, 0, out)
-
-    lines = out.splitlines()
-
-    assert "Preparing to serve django's admin site static files " \
-           "(as per settings.LETTUCE_SERVE_ADMIN_MEDIA=True)..." in lines
-    assert 'Running on port 7000 ... OK' in lines
-    assert 'Fetching static files ... OK' in lines
-    assert 'Fetching CSS files: ... OK' in lines
-    assert 'Fetching javascript files: ... OK' in lines
-    assert "Django's builtin server is running at 0.0.0.0:7000" in lines
-
-    # the scenario 2 is not suppose to run
-    assert 'Fetching admin media ... OK' not in lines

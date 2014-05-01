@@ -153,8 +153,7 @@ class ThreadedServer(multiprocessing.Process):
 
     def should_serve_admin_media(self):
         try:
-            return ('django.contrib.admin' in settings.INSTALLED_APPS or
-                    getattr(settings, 'LETTUCE_SERVE_ADMIN_MEDIA', False))
+            return 'django.contrib.admin' in settings.INSTALLED_APPS
         except ImportError:
             return False
 
@@ -198,6 +197,7 @@ class ThreadedServer(multiprocessing.Process):
             httpd = httpd_cls(server_address, MutedRequestHandler)
 
         except socket.error:
+            print("ERROR: LettuceServerException")
             raise LettuceServerException(
                 "the port %d already being used, could not start " \
                 "django's builtin server on it" % self.port,
@@ -205,11 +205,6 @@ class ThreadedServer(multiprocessing.Process):
 
         handler = WSGIHandler()
         if self.should_serve_admin_media():
-            # if not AdminMediaHandler:
-            #     raise LettuceServerException(
-            #         "AdminMediaHandler is not available in this version of "
-            #         "Django. Please set LETTUCE_SERVE_ADMIN_MEDIA = False "
-            #         "in your Django settings.")
             admin_media_path = ''
             handler = StaticFilesHandler(handler, admin_media_path)
 
@@ -297,9 +292,6 @@ class DefaultServer(BaseServer):
 
         if self._server.should_serve_admin_media():
             msg = "Preparing to serve django's admin site static files"
-            if getattr(settings, 'LETTUCE_SERVE_ADMIN_MEDIA', False):
-                msg += ' (as per settings.LETTUCE_SERVE_ADMIN_MEDIA=True)'
-
             print("%s..." % msg)
 
         addrport = self.address, self._server.port

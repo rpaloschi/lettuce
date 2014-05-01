@@ -1,4 +1,4 @@
-# Django settings for grocery project.
+# Django settings for chive project.
 from os.path import dirname, abspath, join
 LOCAL_FILE = lambda *path: abspath(join(dirname(__file__), *path))
 
@@ -6,7 +6,7 @@ DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+    ('Your Name', 'your_email@domain.com'),
 )
 
 MANAGERS = ADMINS
@@ -21,6 +21,10 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
+
+ALLOWED_HOSTS = (
+    '127.0.0.1',
+)
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -70,16 +74,16 @@ STATIC_ROOT = ''
 STATIC_URL = '/static/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'gw$-1dpq0k8xc+fqkywqr0$c3^fg)x!ym*^46=jmc@ql&z)pr8'
+#SECRET_KEY = 'gw$-1dpq0k8xc+fqkywqr0$c3^fg)x!ym*^46=jmc@ql&z)pr8'
+SECRET_KEY = 'secret'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
 )
 
-ROOT_URLCONF = 'grocery.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATE_DIRS = (
     LOCAL_FILE('templates'),
@@ -88,13 +92,36 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.staticfiles',
     'lettuce.django',
+    'south',
 )
+
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.core.context_processors.tz",
+    "django.contrib.messages.context_processors.messages"
+)
+
 LETTUCE_SERVER_PORT = 7000
 STATIC_FILES_AT = LOCAL_FILE('static-files')
-STATICFILES_DIRS = [
+
+STATICFILES_DIRS = (
     STATIC_FILES_AT,
-]
+)
