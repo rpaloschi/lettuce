@@ -33,8 +33,10 @@ def teardown():
 
 
 @FileSystem.in_directory(current_directory, 'django', 'chive')
-def test_django_admin_media_serving_on_django_13():
-    'lettuce should serve admin static files properly on Django 1.3'
+def test_django_admin_media_serving_on_django_16():
+    'lettuce should serve admin static files properly on Django 1.6' \
+    'backward compatibility with an existing test before the port' \
+    'targeting django version 1.3'
 
     os.environ['PYTHONPATH'] = "%s:%s" % (
         FileSystem.join(lib_directory, 'Django-1.6.2'),

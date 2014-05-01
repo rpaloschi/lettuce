@@ -2,7 +2,7 @@
 from os.path import dirname, abspath, join
 LOCAL_FILE = lambda *path: abspath(join(dirname(__file__), *path))
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 # ADMINS = (
@@ -13,8 +13,8 @@ TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.django.db.backends.sqlite3
-        'NAME': '',                      # Or path to database file if using sqlite3. chive.sqlite
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': '',                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -57,7 +57,7 @@ MEDIA_ROOT = ''
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -77,7 +77,6 @@ SECRET_KEY = 'secret'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
 )
 
 ROOT_URLCONF = 'urls'
@@ -86,23 +85,19 @@ TEMPLATE_DIRS = (
     LOCAL_FILE('templates'),
 )
 
-
-
-
 INSTALLED_APPS = (
-    # 'django.contrib.auth',
-    # 'django.contrib.contenttypes',
-    # 'django.contrib.sessions',
-    # 'django.contrib.sites',
-    # 'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.admin',
     'django.contrib.staticfiles',
     'lettuce.django',
-    'south',
 )
 
 LETTUCE_SERVER_PORT = 7000
 STATIC_FILES_AT = LOCAL_FILE('static-files')
 
-STATICFILES_DIRS = [
+STATICFILES_DIRS = (
     STATIC_FILES_AT,
-]
+)
