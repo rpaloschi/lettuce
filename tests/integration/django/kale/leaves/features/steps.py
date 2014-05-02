@@ -16,5 +16,7 @@ def change_view(step):
 
 @step('The root page says "(.*)"')
 def root_page_text(step, text):
-    response = urlopen(django_url('/')).read()
-    assert_equals(response, text)
+    url = django_url('/')
+    url = url.replace('0.0.0.0', '127.0.0.1')
+    response = urlopen(url).read()
+    assert_equals(str(response, encoding='UTF-8'), text)

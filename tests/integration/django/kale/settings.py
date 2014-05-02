@@ -14,6 +14,7 @@ DATABASES = {
 INSTALLED_APPS = (
     'lettuce.django',
     'leaves',
+    'south',
 )
 
 LETTUCE_TEST_SERVER = 'lettuce.django.server.DjangoServer'

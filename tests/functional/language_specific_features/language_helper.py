@@ -33,7 +33,7 @@ lettuce_dir = abspath(dirname(lettuce.__file__))
 join_path = lambda *x: join(current_dir, *x)
 lettuce_path = lambda *x: abspath(join(lettuce_dir, *x))
 
-call_line = StepDefinition.__call__.__func__.__code__.co_firstlineno + 5
+call_line = StepDefinition.__call__.__code__.co_firstlineno + 5
 
 def prepare_stdout():
     CALLBACK_REGISTRY.clear()

@@ -73,7 +73,9 @@ def test_model_existence_check():
     status, out = run_scenario('leaves', 'existence', 3)
     assert_not_equals(status, 0)
 
-    assert "Garden does not exist: {'name': 'Secret Garden', '@howbig': 'huge'}" in out
+    assert "Garden does not exist: {" in out
+    assert "'name': 'Secret Garden'" in out
+    assert "'@howbig': 'huge'" in out
     gardens = "\n".join([
         "Rows in DB are:",
         "id=1, name=Secret Garden, area=45, raining=False, howbig=small, ",

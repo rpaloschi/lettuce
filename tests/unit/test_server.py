@@ -32,5 +32,4 @@ def test_server_threading():
     status, out = subprocess.getstatusoutput(
         "%s manage.py harvest --verbosity=1" % (python_path,))
 
-    print("OUT:", out)
     assert_equals(status, 0, out)

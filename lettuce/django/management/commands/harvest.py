@@ -207,6 +207,7 @@ class Command(BaseCommand):
             print(traceback.format_exc(2))
 
         finally:
+            results = [ x for x in results if type(x) is not type(None) ]
             summary = SummaryTotalResults(results)
             summary.summarize_all()
             registry.call_hook('after', 'harvest', summary)

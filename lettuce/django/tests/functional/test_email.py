@@ -22,5 +22,4 @@ def test_email():
     status, out = subprocess.getstatusoutput(
         "django-admin.py harvest email.feature --verbosity=2")
 
-    print("OUT:", out)
     assert_not_equals(status, 0)

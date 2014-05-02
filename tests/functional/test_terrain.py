@@ -31,8 +31,6 @@ def test_imports_terrain_under_path_that_is_run():
 
     status, output = subprocess.getstatusoutput('%s -c "from terrain import world;assert hasattr(world, \'works_fine\');print(\'it passed!\')"' % python_path)
 
-    print("Output:", output)
-
     assert_equals(status, 0)
     assert_equals(output, "it passed!")
 
